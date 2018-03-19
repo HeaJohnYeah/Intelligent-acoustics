@@ -6,7 +6,7 @@ CPP = $(CROSS_PREFIX)g++
 CC_FLAG += -Wall -O2
 CC_FLAG += -fPIC -DPIC -DCONFIG_DEBUG_LEVEL=255
 
-AUTO_INC_ROOT = ../auto
+AUTO_INC_ROOT = ../common
 AUTO_LIB_ROOT = ../auto -lauto
 
 INC = -I$(AUTO_INC_ROOT)

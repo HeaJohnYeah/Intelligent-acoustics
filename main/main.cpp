@@ -22,12 +22,16 @@
 
 #include <net/if_slip.h>
 #include <stddef.h>
-#include "../auto/auto.h"
-
+#include "../common/auto.h"
+int g_run = 1;
 int main(int argc, char* argv[])
 {
 	if(0 != auto_init())
 		auto_fini();
 	printf("%s %d\n",__FUNCTION__,__LINE__);
+	while(g_run)
+	{
+		usleep(10000);
+	}
 	return 0;
 }

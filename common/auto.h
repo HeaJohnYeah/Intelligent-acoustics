@@ -14,8 +14,6 @@
 #endif
 
 #define fclose_save(fp) { \
-	printf("%s %d\n",__func__,__LINE__);\
-	printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ save close !!!!!!!!!!!!!!!!!!!!!!111\n");\
 	fflush(fp);\
 	fsync(fileno(fp));\
 	fclose(fp);\
@@ -23,14 +21,21 @@
 	usleep(10000);\
 }
 
-//不带打印的同步
-#define fclose_save_nopr(fp) { \
-	fflush(fp);\
-	fsync(fileno(fp));\
-	fclose(fp);\
-	system("sync");\
-	usleep(10000);\
+#define close_dir(fp){ \
+	closedir(fp); \
+	fp = NULL; \
+	usleep(10000); \
 }
+
+typedef signed char             AUT_S8;
+typedef signed short            AUT_S16;
+typedef signed int              AUT_S32;
+typedef signed long long        AUT_S64;
+
+typedef unsigned char           AUT_U8;
+typedef unsigned short          AUT_U16;
+typedef unsigned int            AUT_U32;
+typedef unsigned long long      AUT_U64;
 
 
 #ifdef __cplusplus

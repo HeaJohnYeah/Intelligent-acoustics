@@ -1,4 +1,4 @@
-#ifdef __cplusplus
+﻿#ifdef __cplusplus
 #if __cplusplus
 extern "C"{
 #endif
@@ -7,6 +7,7 @@ extern "C"{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
@@ -19,16 +20,45 @@ extern "C"{
 #include <net/if.h>
 #include <sys/syscall.h>
 
-#include "auto.h"
+#include "../common/auto.h"
+#include "../common/kernel_list.h"
+
+#define MUSIC_DIR "../music"
+
+typedef struct list_head music_list;
+
+typedef struct {
+	AUT_U8     *music_id;//音乐名字
+	AUT_U8     *music_path;//音乐地址
+	music_list  list;
+}MusicInfo;
 
 int auto_mode = 0; //开启多媒体模式1，关闭多媒体模式0
-
 static pthread_t auto_thread = 0;
+MusicInfo music_info_list;
 
+
+
+void MusicInit(MusicInfo *music_node)
+{
+	AUT_U8 MusicID_buf[100];
+	struct dirent *music_dirent;
+	DIR *music_dir = opendir(MUSIC_DIR);
+	while(NULL != (music_dirent = readdir(music_dir))){//读取文件并去除"."和".."
+		if(strcmp(music_dirent->d_name,".")
+		||strcmp(music_dirent->d_name,".."))
+			continue;
+		sprintf(MusicID_buf, "%s%s", MUSIC_DIR, music_dirent->d_name);
+		
+	}
+	close_dir(music_dir);
+}
 
 
 void* AutoProcess(void *param)
 {
+	
+	
 	while(!auto_mode)
 	{
 		printf("auto mode is opening\n");
@@ -38,7 +68,7 @@ void* AutoProcess(void *param)
 //多媒体初始化
 int auto_init()
 {
-	printf("go into auto init !!!\n");
+	MusicInit(&music_info_list);
 	return pthread_create(&auto_thread,NULL,AutoProcess,NULL);
 
 }
