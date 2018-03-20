@@ -27,5 +27,6 @@ $(TARGET) : $(OBJ)
 	
 clean :
 	rm -f $(OBJ) $(TARGET)
+	rm -f ../bin/$(TARGET)
 install :
-	cp $(TARGET) ../bin
+	cp $(TARGET) ../bin/$(TARGET)
