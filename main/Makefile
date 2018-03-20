@@ -6,11 +6,13 @@ CPP = $(CROSS_PREFIX)g++
 CC_FLAG += -Wall -O2
 CC_FLAG += -fPIC -DPIC -DCONFIG_DEBUG_LEVEL=255
 
-AUTO_INC_ROOT = ../common
-AUTO_LIB_ROOT = ../auto -lauto
+COMMON_INC_ROOT = ../common
 
-INC = -I$(AUTO_INC_ROOT)
-LIB = -L../auto -lauto -lpthread
+AUTO_LIB_ROOT = ../auto -lauto
+MSR_LIB_ROOT = ../msr -lmsr
+
+INC = -I$(COMMON_INC_ROOT)
+LIB = -L$(AUTO_LIB_ROOT) -L$(MSR_LIB_ROOT) -lpthread 
 
 
 OBJ = main.o

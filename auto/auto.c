@@ -30,7 +30,7 @@ typedef struct list_head music_list;
 typedef struct {
 	AUT_U8     *music_id;//音乐名字
 	AUT_U8     *music_path;//音乐地址
-	music_list  list;
+	music_list *list;
 }MusicInfo;
 
 int auto_mode = 0; //开启多媒体模式1，关闭多媒体模式0
@@ -39,7 +39,7 @@ MusicInfo music_info_list;
 
 
 
-void MusicInit(MusicInfo *music_node)
+void MusicInit(MusicInfo *music_node)//音乐初始化
 {
 	AUT_U8 MusicID_buf[100];
 	struct dirent *music_dirent;
@@ -48,12 +48,23 @@ void MusicInit(MusicInfo *music_node)
 		if(strcmp(music_dirent->d_name,".")
 		||strcmp(music_dirent->d_name,".."))
 			continue;
-		sprintf(MusicID_buf, "%s%s", MUSIC_DIR, music_dirent->d_name);
 		
+		sprintf(MusicID_buf, "%s%s", MUSIC_DIR, music_dirent->d_name);
+		MusicInfo *new_music = malloc(sizeof(MusicInfo));
+		
+		memcpy(new_music->music_id,music_dirent->d_name,sizeof(music_dirent->d_name));
+		memcpy(new_music->music_path,MusicID_buf,sizeof(MusicID_buf));
+		list_add_tail(new_music->list,music_node->list);//增加到音乐链表
 	}
 	close_dir(music_dir);
 }
 
+
+void MusicDel(MusicInfo *music_node)
+{
+	
+	//	
+}
 
 void* AutoProcess(void *param)
 {
@@ -82,6 +93,7 @@ void auto_fini()
 		pthread_join(auto_thread,NULL);
 		auto_thread = 0;
 	}
+	
 	
 }
 
