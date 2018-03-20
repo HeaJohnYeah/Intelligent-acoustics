@@ -28,9 +28,9 @@ extern "C"{
 typedef struct list_head music_list;
 
 typedef struct {
-	AUT_U8     *music_id;//音乐名字
-	AUT_U8     *music_path;//音乐地址
 	music_list *list;
+		AUT_U8 *music_id;//音乐名字
+		AUT_U8 *music_path;//音乐地址
 }MusicInfo;
 
 int auto_mode = 0; //开启多媒体模式1，关闭多媒体模式0
