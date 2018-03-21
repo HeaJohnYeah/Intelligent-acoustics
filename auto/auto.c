@@ -28,18 +28,18 @@ extern "C"{
 typedef struct list_head music_list;
 
 typedef struct {
-	music_list *list;
+	music_list node;
 		AUT_U8 *music_id;//音乐名字
 		AUT_U8 *music_path;//音乐地址
 }MusicInfo;
 
 int auto_mode = 0; //开启多媒体模式1，关闭多媒体模式0
 static pthread_t auto_thread = 0;
-MusicInfo music_info_list;
+music_list music_info_list;
 
 
 
-void MusicInit(MusicInfo *music_node)//音乐初始化
+void MusicInit(music_list *music_node)//音乐初始化
 {
 	AUT_U8 MusicID_buf[100];
 	struct dirent *music_dirent;
@@ -48,28 +48,35 @@ void MusicInit(MusicInfo *music_node)//音乐初始化
 		if(strcmp(music_dirent->d_name,".")
 		||strcmp(music_dirent->d_name,".."))
 			continue;
-		
+
 		sprintf(MusicID_buf, "%s%s", MUSIC_DIR, music_dirent->d_name);
 		MusicInfo *new_music = malloc(sizeof(MusicInfo));
-		
+
 		memcpy(new_music->music_id,music_dirent->d_name,sizeof(music_dirent->d_name));
 		memcpy(new_music->music_path,MusicID_buf,sizeof(MusicID_buf));
-		list_add_tail(new_music->list,music_node->list);//增加到音乐链表
+		list_add_tail(&new_music->node,music_node);//增加到音乐链表
 	}
 	close_dir(music_dir);
 }
 
 
-void MusicDel(MusicInfo *music_node)
+void MusicDel(music_list *music_node)
 {
-	
-	//	
+
+	music_list *node, *tmp;
+	MusicInfo *qd;
+	list_for_each_safe(node,tmp,music_node)
+	{
+		qd = list_entry(node ,MusicInfo, node);
+		list_del(node);
+		free(qd);
+	}
 }
 
 void* AutoProcess(void *param)
 {
-	
-	
+
+
 	while(!auto_mode)
 	{
 		printf("auto mode is opening\n");
@@ -87,14 +94,14 @@ int auto_init()
 void auto_fini()
 {
 	auto_mode = 1;
-	
+	MusicDel(&music_info_list);
 	if(0 != auto_thread)
 	{
 		pthread_join(auto_thread,NULL);
 		auto_thread = 0;
 	}
-	
-	
+
+
 }
 
 

@@ -10,7 +10,7 @@
 /*
 * Simple doubly linked list implementation.
 *
-* Some of the internal functions (â€œ__xxxâ€) are useful when
+* Some of the internal functions (â€œ__xxxâ€? are useful when
 * manipulating whole lists rather than single entries, as
 * sometimes we already know the next/prev entries and we can
 * generate better code by using them directly rather than
@@ -67,7 +67,7 @@ static inline void __list_add(struct list_head *new,
 }
 
 /**
-* list_add â€“ add a new entry
+* list_add â€?add a new entry
 * @new: new entry to be added
 * @head: list head to add it after
 *
@@ -80,7 +80,7 @@ static inline void list_add(struct list_head *new, struct list_head *head)
 }
 
 /**
-* list_add_tail â€“ add a new entry
+* list_add_tail â€?add a new entry
 * @new: new entry to be added
 * @head: list head to add it before
 *
@@ -106,7 +106,7 @@ static inline void __list_del(struct list_head *prev, struct list_head *next)
 }
 
 /**
-* list_del â€“ deletes entry from list.
+* list_del â€?deletes entry from list.
 * @entry: the element to delete from the list.
 * Note: list_empty on entry does not return true after this, the entry is in an undefined state.
 */
@@ -118,7 +118,7 @@ static inline void list_del(struct list_head *entry)
 }
 
 /**
-* list_del_init â€“ deletes entry from list and reinitialize it.
+* list_del_init â€?deletes entry from list and reinitialize it.
 * @entry: the element to delete from the list.
 */
 static inline void list_del_init(struct list_head *entry)
@@ -128,7 +128,7 @@ static inline void list_del_init(struct list_head *entry)
 }
 
 /**
-* list_move â€“ delete from one list and add as anotherâ€™s head
+* list_move â€?delete from one list and add as anotherâ€™s head
 * @list: the entry to move
 * @head: the head that will precede our entry
 */
@@ -140,7 +140,7 @@ static inline void list_move(struct list_head *list,
 }
 
 /**
-* list_move_tail â€“ delete from one list and add as anotherâ€™s tail
+* list_move_tail â€?delete from one list and add as anotherâ€™s tail
 * @list: the entry to move
 * @head: the head that will follow our entry
 */
@@ -152,7 +152,7 @@ static inline void list_move_tail(struct list_head *list,
 }
 
 /**
-* list_empty â€“ tests whether a list is empty
+* list_empty â€?tests whether a list is empty
 * @head: the list to test.
 */
 static inline int list_empty(struct list_head *head)
@@ -175,7 +175,7 @@ static inline void __list_splice(struct list_head *list,
 }
 
 /**
-* list_splice â€“ join two lists
+* list_splice â€?join two lists
 * @list: the new list to add.
 * @head: the place to add it in the first list.
 */
@@ -186,7 +186,7 @@ __list_splice(list, head);
 }
 
 /**
-* list_splice_init â€“ join two lists and reinitialise the emptied list.
+* list_splice_init â€?join two lists and reinitialise the emptied list.
 * @list: the new list to add.
 * @head: the place to add it in the first list.
 *
@@ -202,7 +202,7 @@ INIT_LIST_HEAD(list);
 }
 
 /**
-* list_entry â€“ get the struct for this entry
+* list_entry â€?get the struct for this entry
 * @ptr:    the &struct list_head pointer.
 * @type:    the type of the struct this is embedded in.
 * @member:    the name of the list_struct within the struct.
@@ -249,7 +249,7 @@ for (pos = list_entry((head)->next, typeof(*pos), member);    \
 pos = list_entry(pos->member.next, typeof(*pos), member))
 
 /**
-* list_for_each_entry_safe â€“ iterate over list of given type safe against removal of list entry
+* list_for_each_entry_safe â€?iterate over list of given type safe against removal of list entry
 * @pos:    the type * to use as a loop counter.
 * @n:        another type * to use as temporary storage
 * @head:    the head for your list.
