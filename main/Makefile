@@ -8,11 +8,13 @@ CC_FLAG += -fPIC -DPIC -DCONFIG_DEBUG_LEVEL=255
 
 COMMON_INC_ROOT = ../common
 
-AUTO_LIB_ROOT = ../auto -lauto
-MSR_LIB_ROOT = ../msr -lmsr
+AUTO_LIB_ROOT = ../auto 
+MSR_LIB_ROOT = ../msr 
 
 INC = -I$(COMMON_INC_ROOT)
-LIB = -L$(AUTO_LIB_ROOT) -L$(MSR_LIB_ROOT) -lpthread 
+LIB := -L$(AUTO_LIB_ROOT) 
+LIB += -L$(MSR_LIB_ROOT) 
+LIB += -lpthread -lauto -lmsr
 
 
 OBJ = main.o
