@@ -3,29 +3,10 @@
 
 #include <stdint.h>
 
-#ifdef _WIN32
-#ifdef AUTO_EXPORTS
-#define AUTO_API __declspec(dllexport)
-#else
-#define AUTO_API __declspec(dllimport)
-#endif
-#else
 #define AUTO_API
-#endif
 
-#define fclose_save(fp) { \
-	fflush(fp);\
-	fsync(fileno(fp));\
-	fclose(fp);\
-	system("sync");\
-	usleep(10000);\
-}
+#define MUSIC_DIR "../music"
 
-#define close_dir(fp){ \
-	closedir(fp); \
-	fp = NULL; \
-	usleep(10000); \
-}
 
 typedef signed char             AUT_S8;
 typedef signed short            AUT_S16;

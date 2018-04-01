@@ -5,20 +5,6 @@
 #include <pthread.h>  
 #define PTHREAD_POOL
 
-#define fclose_save(fp) { \
-	fflush(fp);\
-	fsync(fileno(fp));\
-	fclose(fp);\
-	system("sync");\
-	usleep(10000);\
-}
-
-#define close_dir(fp){ \
-	closedir(fp); \
-	fp = NULL; \
-	usleep(10000); \
-}
-
 /* 
  *线程池里所有运行和等待的任务都是一个PoolTask 
  *由于所有任务都在链表里，所以是一个链表结构 
@@ -33,8 +19,7 @@ typedef struct task{
 
 
 /*线程池结构*/  
-typedef struct  
-{  
+typedef struct pool{  
 	pthread_t *pthreadID; 
     pthread_mutex_t mutex;  
     pthread_cond_t 	cond;  	

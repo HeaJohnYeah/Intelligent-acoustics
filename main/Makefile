@@ -12,9 +12,9 @@ AUTO_LIB_ROOT = ../auto
 MSR_LIB_ROOT = ../msr 
 
 INC = -I$(COMMON_INC_ROOT)
-LIB := -L$(AUTO_LIB_ROOT) 
-LIB += -L$(MSR_LIB_ROOT) 
-LIB += -lpthread -lauto -lmsr
+LIB := -L$(AUTO_LIB_ROOT) -lauto 
+LIB += -L$(MSR_LIB_ROOT) -lmsr 
+LIB += -lpthread  
 
 
 OBJ = main.o
@@ -32,5 +32,6 @@ $(TARGET) : $(OBJ)
 clean :
 	rm -f $(OBJ) $(TARGET)
 	rm -f ../bin/$(TARGET)
+	
 install :
 	cp $(TARGET) ../bin/$(TARGET)

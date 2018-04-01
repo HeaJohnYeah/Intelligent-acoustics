@@ -22,13 +22,23 @@
 
 #include <net/if_slip.h>
 #include <stddef.h>
+
+#include "../common/common.h"
 #include "../common/auto.h"
+#include "../common/msr.h"
+
 int g_run = 1;
+
 int main(int argc, char* argv[])
 {
 	if(0 != auto_init())
 		auto_fini();
+	
+	if(0 != msr_init(2))
+		msr_fini();
+	
 	printf("%s %d\n",__FUNCTION__,__LINE__);
+	
 	while(g_run)
 	{
 		usleep(10000);

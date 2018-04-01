@@ -19,11 +19,12 @@ extern "C"{
 #include <netinet/in.h>
 #include <net/if.h>
 #include <sys/syscall.h>
+#include <pthread.h>  
 
+#include "../common/common.h"
 #include "../common/auto.h"
 #include "../common/kernel_list.h"
 
-#define MUSIC_DIR "../music"
 
 typedef struct list_head music_list;
 

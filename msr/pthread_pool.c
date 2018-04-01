@@ -14,7 +14,7 @@ extern "C"{
 
 PTHREAD_POOL int Ai_Requset_pool_add(PoolCreate *AiResTask, void *(*process)(void *arg), void *arg)
 {
-	    /*构造一个新任务*/  
+	/*构造一个新任务*/  
     PoolTask *newtask = (PoolTask *) malloc (sizeof (PoolTask));  
     newtask->process = process;  
     newtask->arg = arg;  
