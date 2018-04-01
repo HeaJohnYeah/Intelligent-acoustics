@@ -1,18 +1,16 @@
 # Intelligent-acoustics msr Makefile 
 
 CC=$(CROSS_PREFIX)gcc
-CPP=$(CROSS_PREFIX)g++
 AR=$(CROSS_PREFIX)ar
 
-CC_FLAG = -Wall -O2
+MSR := $(wildcard *.c)
+OBJ = $(MSR:%.c=%.o)
 
 CC_FLAG += -lpthread
 
 INC = -I../common/
 
 MSR_TARGET := libmsr.a
-OBJ = msr.o
-
 .PHONY : clean all
 
 all: $(MSR_TARGET)
@@ -20,10 +18,9 @@ all: $(MSR_TARGET)
 $(MSR_TARGET):$(OBJ)
 	$(AR) rcs $(MSR_TARGET) $(OBJ)
 
-		
-
-%.o : %.cpp
-	$(CPP) $(CC_FLAG) $(INC) -c $< -o $@
+.SUFFIXES: .o .c
+.c.o:
+	$(CC) $(CFLAGS) $(FLAGS_SRC) $(LDFLAGS) $(INC) -c $*.c -o $*.o
 	
 clean:
 	@rm -f $(MSR_TARGET)

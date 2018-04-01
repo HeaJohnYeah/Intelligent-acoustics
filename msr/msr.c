@@ -1,6 +1,12 @@
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif   /* End of #ifdef __cplusplus */
+
 #include <stdio.h>
-#include <set>
-#include <string>
+#include <stdlib.h>
+#include <string.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -15,16 +21,13 @@
 #include <errno.h>
 #include <netdb.h>
 
-#include "../common/auto.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+#include "../common/msr.h"
 
 
 
 
 #ifdef __cplusplus
+#if __cplusplus
 }
 #endif
+#endif /* End of #ifdef __cplusplus */
