@@ -2,9 +2,16 @@
 #define _MSR__H_
 
 #include <stdint.h>
-
+/*  msr process */
 #define MSR_API
 #define CMD_SIZE        (60)
+
+/*snd file*/
+#define SNDFILE SNDFILE
+#define SF_INFO SF_INFO
+
+#define ESP 			(1e-6)
+
 
 typedef signed char             MSR_S8;
 typedef signed short            MSR_S16;
@@ -24,7 +31,7 @@ typedef unsigned long long      MSR_U64;
 *	-d, --duration=#
 *	  	设置持续时间,单位为秒.
 *	-c, --channels=#
-*  	    设置通道号.
+*  	    设置通道�?
 *	-f --format=FORMAT
 *		设置格式.格式包括: S8          U8  S16_LE  S16_BE  U16_LE
 *		U16_BE  S24_LE S24_BE U24_LE U24_BE S32_LE S32_BE U32_LE U32_BE

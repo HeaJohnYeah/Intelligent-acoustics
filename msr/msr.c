@@ -7,10 +7,10 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <math.h>
 
 #include <stdlib.h>
 #include <fcntl.h>
@@ -20,6 +20,8 @@ extern "C" {
 #include <sys/stat.h>
 #include <errno.h>
 #include <netdb.h>
+
+#include <sndfile.h>
 
 #include "../common/msr.h"
 #include "../common/auto.h"
@@ -51,21 +53,73 @@ const MSR_U8 *FILE_TYPE[4]={
 		"voc","wav","raw","au"
 };
 
+
+static double waves_max(double *buf)//计算最大振幅
+{
+	double max;
+	int arraylenth =sizeof(buf);
+	for(int i = 0; i < arraylenth; i++)
+		if(fabs(buf[i] - max) >= esp)
+				max = buf[i];
+	return max;
+}
+
+//读取wav文件信息
+static int snd_read_wav(char *wav_path)
+{
+	SNDFILE *sf;
+	SF_INFO info;
+	int num_channels;
+	int num_items;
+	int num_wav;
+	double *wavbuf;
+
+	info.format = 0;
+
+	sf = sf_open(wav_path,SFM_READ,&info);//获取wav信息
+	if(NULL == sf){
+		printf("Failed to open the file.\n");
+		sf_close(sf);
+		return -1;
+	}
+
+	printf("frames=%d\n samplerate=%d\n channels=%d\n", info.frames, info.samplerate, info.channels);
+
+	num_items = info.frames * info.channels;
+	printf("num_items=%d\n",num_items);
+
+	wavbuf = (double *)malloc(num_items*sizeof(double));
+	if(NULL == wavbuf){
+		printf("Create wav buf failed.\n");
+		return -1;
+	}
+
+    num_wav = sf_read_double(sf,wavbuf,num_items);//读取个点数据
+    sf_close(sf);
+
+	double Mwav = waves_max(wavbuf);//计算出最大振幅
+	free(wavbuf);
+	return 0;
+}
+
+
+//录音命令参数初始化
 static int res_info_init(RecordInfo *rest,	MSR_U8 *rate, MSR_U8 *duration, MSR_U8 *channels, MSR_U8 *format, MSR_U8 *type)
 {
 	rest = (RecordInfo *)malloc(sizeof(RecordInfo));
 	if(NULL == rest){
 		printf("request malloc fail\n");
 		return -1;
-	}		
+	}
 	rest->rate = rate;
 	rest->duration = duration;
-	rest->channels = channels;	
+	rest->channels = channels;
 	rest->format = format;
 	rest->type = type;
 	return 0;
 }
 
+//录音命令设置
 static void record_cmd(RecordInfo *rest_info, MSR_U8 *cmd)
 {
 	sprintf(cmd, "arecord -c %s -d %s -f %s -r %s -t %s record.%s",
@@ -74,7 +128,8 @@ static void record_cmd(RecordInfo *rest_info, MSR_U8 *cmd)
 				rest_info->type,rest_info->type);
 }
 
-static void *request_process(void *arg)  
+//录音命令线程
+static void *request_process(void *arg)
 {
 	RecordInfo *rest_info = (RecordInfo *)arg;
 	MSR_U8 *recmd = malloc(CMD_SIZE);
@@ -92,23 +147,23 @@ static void *request_process(void *arg)
 MSR_API int msr_init(int task_num)
 {
 	Ai_Requset_pool_init(&api_request,task_num);	//创建线程来录音
-	
+
 	RecordInfo *rest_info[task_num];//录音参数
-	
+
 	MSR_U8 *rate 	 = "16000";//频率
 	MSR_U8 *duration = "4";//持续时间，秒为单位
 	MSR_U8 *channels = "2";//通道号
 	MSR_U8 *format 	 = (MSR_U8 *)FORMAT[4];
 	MSR_U8 *type 	 = (MSR_U8 *)FILE_TYPE[1];
-	
+
 	int i,ret;
-    for (i = 0; i < task_num; i++) {  
+    for (i = 0; i < task_num; i++) {
        	ret = res_info_init(rest_info[i], rate, duration, channels, format, type);
 		if(0 != ret){
 			printf("request info init fail task number is %d\n",i);
 			goto msr_destroy;
 		}
-        ret = Ai_Requset_pool_add(&api_request, request_process, rest_info[i]);  
+        ret = Ai_Requset_pool_add(&api_request, request_process, rest_info[i]);
 		if(0 != ret){
 			printf("create request fail task number is %d\n",i);
 			goto msr_destroy;
@@ -116,7 +171,7 @@ MSR_API int msr_init(int task_num)
     }
 
 	return 0;
-	
+
 msr_destroy :
 	msr_fini();
 	free(rest_info);
