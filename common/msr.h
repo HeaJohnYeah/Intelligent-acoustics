@@ -11,7 +11,10 @@
 #define SF_INFO SF_INFO
 
 #define ESP 			(1e-6)
-
+#define WAV_PATH   "record.wav"
+#define WAV_FAIL        (-1)
+#define WAV_CONTINUE    ( 1)
+#define WAV_SUCCESS     ( 0)
 
 typedef signed char             MSR_S8;
 typedef signed short            MSR_S16;

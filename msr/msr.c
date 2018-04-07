@@ -21,7 +21,7 @@ extern "C" {
 #include <errno.h>
 #include <netdb.h>
 
-#include <sndfile.h>
+#include "sndfile.h"
 
 #include "../common/msr.h"
 #include "../common/auto.h"
@@ -58,20 +58,22 @@ static double waves_max(double *buf)//计算最大振幅
 {
 	double max;
 	int arraylenth =sizeof(buf);
-	for(int i = 0; i < arraylenth; i++)
-		if(fabs(buf[i] - max) >= esp)
+	int i;
+	for(i = 0; i < arraylenth; i++)
+		if(fabs(buf[i] - max) >= ESP)
 				max = buf[i];
 	return max;
 }
 
-//读取wav文件信息
-static int snd_read_wav(char *wav_path)
+//读取wav文件信息,设置wav振幅判断
+static int snd_read_wav(char *wav_path, double wav_flag)
 {
 	SNDFILE *sf;
 	SF_INFO info;
 	int num_channels;
 	int num_items;
 	int num_wav;
+	int ret;
 	double *wavbuf;
 
 	info.format = 0;
@@ -80,7 +82,7 @@ static int snd_read_wav(char *wav_path)
 	if(NULL == sf){
 		printf("Failed to open the file.\n");
 		sf_close(sf);
-		return -1;
+		return WAV_FAIL;
 	}
 
 	printf("frames=%d\n samplerate=%d\n channels=%d\n", info.frames, info.samplerate, info.channels);
@@ -91,15 +93,21 @@ static int snd_read_wav(char *wav_path)
 	wavbuf = (double *)malloc(num_items*sizeof(double));
 	if(NULL == wavbuf){
 		printf("Create wav buf failed.\n");
-		return -1;
+		sf_close(sf);
+		return WAV_FAIL;
 	}
 
     num_wav = sf_read_double(sf,wavbuf,num_items);//读取个点数据
     sf_close(sf);
 
 	double Mwav = waves_max(wavbuf);//计算出最大振幅
+	if(fabs(Mwav) - wav_flag)
+		ret = WAV_SUCCESS;
+	else
+		ret = WAV_FAIL;
 	free(wavbuf);
-	return 0;
+	
+	return ret;
 }
 
 
@@ -133,6 +141,7 @@ static void *request_process(void *arg)
 {
 	RecordInfo *rest_info = (RecordInfo *)arg;
 	MSR_U8 *recmd = malloc(CMD_SIZE);
+	double wav_flag = 0;
 	record_cmd(rest_info, recmd);
 	if(NULL == recmd)
 		printf("record cmd fail\n");
@@ -140,7 +149,13 @@ static void *request_process(void *arg)
 	while(1)
 	{
 		system(recmd);
-		Sleep(5);
+		int ret = snd_read_wav(WAV_PATH, wav_flag);
+		if(ret == WAV_FAIL || 
+		   ret == WAV_CONTINUE){
+		  	Sleep(5);
+			continue;
+		}
+		
 	}
 }
 

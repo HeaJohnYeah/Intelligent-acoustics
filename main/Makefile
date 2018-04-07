@@ -7,13 +7,18 @@ CC_FLAG += -Wall -O2
 CC_FLAG += -fPIC -DPIC -DCONFIG_DEBUG_LEVEL=255
 
 COMMON_INC_ROOT = ../common
+SND_INC_ROOT = /usr/local/snd/include
 
 AUTO_LIB_ROOT = ../auto 
-MSR_LIB_ROOT = ../msr 
+MSR_LIB_ROOT = ../msr
+SND_LIB_ROOT = /usr/local/snd/lib
 
-INC = -I$(COMMON_INC_ROOT)
+INC := -I$(COMMON_INC_ROOT)
+INC += -I$(SND_INC_ROOT)
+
 LIB := -L$(AUTO_LIB_ROOT) -lauto 
-LIB += -L$(MSR_LIB_ROOT) -lmsr 
+LIB += -L$(MSR_LIB_ROOT) -lmsr	
+LIB += -L$(SND_LIB_ROOT) -lsndfile
 LIB += -lpthread  
 
 

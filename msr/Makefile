@@ -6,9 +6,12 @@ AR=$(CROSS_PREFIX)ar
 MSR := $(wildcard *.c)
 OBJ = $(MSR:%.c=%.o)
 
-CC_FLAG += -lpthread
 
-INC = -I../common/
+INC := -I../common/
+INC += -I/usr/local/snd/include 
+
+LIB := -L/usr/local/snd/lib -lsndfile
+
 
 MSR_TARGET := libmsr.a
 .PHONY : clean all
@@ -20,7 +23,7 @@ $(MSR_TARGET):$(OBJ)
 
 .SUFFIXES: .o .c
 .c.o:
-	$(CC) $(CFLAGS) $(FLAGS_SRC) $(LDFLAGS) $(INC) -c $*.c -o $*.o
+	$(CC)  $(INC)  $(LIB) -c $*.c -o $*.o
 	
 clean:
 	@rm -f $(MSR_TARGET)
