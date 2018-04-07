@@ -26,22 +26,53 @@
 #include "../common/common.h"
 #include "../common/auto.h"
 #include "../common/msr.h"
+#include "../common/socket.h"
 
 int g_run = 1;
 
+int atoi(char *p)  
+{     
+    int temp = 0;  
+    if('0' <= *p && *p <= '9'){   
+     	 temp = temp+(*p - '0');   
+    }       
+    return temp;  
+}  
+
 int main(int argc, char* argv[])
 {
+#if 0
 	if(0 != auto_init())
 		auto_fini();
 	
-	if(0 != msr_init(2))
+	if(0 != msr_init(1))
 		msr_fini();
 	
 	printf("%s %d\n",__FUNCTION__,__LINE__);
-	
+#endif
+	char recvbuf[100];
+	int recvbuf_len = sizeof(recvbuf);
+
+	int serverSocket = TcpServerCreate(SERVER_PORT, HOST);//服务器socket初始化
+	if(serverSocket < 0)
+		return SOCKET_FAIL;
+
 	while(g_run)
 	{
-		usleep(10000);
+		int client , ret;
+		client = SocketAccept(serverSocket, 3000);//接收客户端
+		if(client < 0)
+			continue;
+		memset(recvbuf, 0, recvbuf_len);
+		if(SocketRecv(client, recvbuf, recvbuf_len, 1000)){	
+			ret = strlen(recvbuf);
+			if(1 == ret){
+				int apcmd = atoi(recvbuf);
+				MusicControl(apcmd);
+			}
+			else
+				printf("Nothing recv!!!\n");
+		}
 	}
 	return 0;
 }

@@ -25,6 +25,7 @@ extern "C" {
 
 #include "../common/msr.h"
 #include "../common/auto.h"
+#include "../common/socket.h"
 #include "../common/common.h"
 #include "../common/pthreadpool.h"
 
@@ -53,6 +54,7 @@ const MSR_U8 *FILE_TYPE[4]={
 		"voc","wav","raw","au"
 };
 
+/*---------------SND  WAV  FILE------------------*/
 
 static double waves_max(double *buf)//计算最大振幅
 {
@@ -85,7 +87,7 @@ static int snd_read_wav(char *wav_path, double wav_flag)
 		return WAV_FAIL;
 	}
 
-	printf("frames=%d\n samplerate=%d\n channels=%d\n", info.frames, info.samplerate, info.channels);
+	printf("frames=%d\n samplerate=%d\n channels=%d\n", (int)info.frames, (int)info.samplerate, (int)info.channels);
 
 	num_items = info.frames * info.channels;
 	printf("num_items=%d\n",num_items);
@@ -110,6 +112,8 @@ static int snd_read_wav(char *wav_path, double wav_flag)
 	return ret;
 }
 
+
+/*------------------------------------------------------*/
 
 //录音命令参数初始化
 static int res_info_init(RecordInfo *rest,	MSR_U8 *rate, MSR_U8 *duration, MSR_U8 *channels, MSR_U8 *format, MSR_U8 *type)

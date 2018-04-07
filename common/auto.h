@@ -7,6 +7,12 @@
 
 #define MUSIC_DIR "../music"
 
+enum MUSIC_CRO{
+	MUSIC_PAUSE = 0,
+ 	MUSIC_PLAY, 
+    MUSIC_NEXT,
+    MUSIC_PRE
+};
 
 typedef signed char             AUT_S8;
 typedef signed short            AUT_S16;
@@ -23,10 +29,12 @@ typedef unsigned long long      AUT_U64;
 extern "C" {
 #endif
 
-
 //函数添加
-AUTO_API int  auto_init();
-AUTO_API void auto_fini();
+AUTO_API void MusicControl(int apcmd);
+
+
+AUTO_API int  auto_init(void);
+AUTO_API void auto_fini(void);
 
 #ifdef __cplusplus
 }

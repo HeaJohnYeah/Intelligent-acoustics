@@ -30,19 +30,28 @@ typedef struct list_head music_list;
 
 typedef struct {
 	music_list node;
-		AUT_U8 *music_id;//音乐名字
-		AUT_U8 *music_path;//音乐地址
+	AUT_U8 *music_id;//音乐名字
+	AUT_U8 *music_path;//音乐地址
 }MusicInfo;
 
 int auto_mode = 0; //开启多媒体模式1，关闭多媒体模式0
 static pthread_t auto_thread = 0;
 music_list music_info_list;
+MusicInfo *music_info;
+
+static void aplay_cmd(MusicInfo *music_info, AUT_U8 *cmd)
+{
+	sprintf(cmd, "aplay  %s/%s",music_info->music_path, music_info->music_id);
+}
 
 
-
-void MusicInit(music_list *music_node)//音乐初始化
+static void MusicInit(music_list *music_node)//音乐初始化
 {
 	AUT_U8 MusicID_buf[100];
+	music_list *node;
+	/*指向链表头*/
+	music_info = list_entry(music_node ,MusicInfo, node);
+	
 	struct dirent *music_dirent;
 	DIR *music_dir = opendir(MUSIC_DIR);
 	while(NULL != (music_dirent = readdir(music_dir))){//读取文件并去除"."和".."
@@ -50,18 +59,19 @@ void MusicInit(music_list *music_node)//音乐初始化
 		||strcmp(music_dirent->d_name,".."))
 			continue;
 
-		sprintf(MusicID_buf, "%s%s", MUSIC_DIR, music_dirent->d_name);
+		sprintf(MusicID_buf, "%s/%s", MUSIC_DIR, music_dirent->d_name);
 		MusicInfo *new_music = malloc(sizeof(MusicInfo));
 
 		memcpy(new_music->music_id,music_dirent->d_name,sizeof(music_dirent->d_name));
 		memcpy(new_music->music_path,MusicID_buf,sizeof(MusicID_buf));
 		list_add_tail(&new_music->node,music_node);//增加到音乐链表
 	}
+	
 	close_dir(music_dir);
 }
 
 
-void MusicDel(music_list *music_node)
+static void MusicDel(music_list *music_node)
 {
 
 	music_list *node, *tmp;
@@ -74,25 +84,47 @@ void MusicDel(music_list *music_node)
 	}
 }
 
-void* AutoProcess(void *param)
+AUTO_API void MusicControl(int apcmd)
 {
+	//AUT_U8 *apcmd;
+	switch(apcmd)
+	{
+		case MUSIC_PAUSE:
+				printf("pause!!!\n");
+				break;
+		case MUSIC_PLAY :
+				printf("play!!!\n");
+				break;
+		case MUSIC_NEXT :
+				printf("next!!!\n");
+				break;
+		case MUSIC_PRE  :
+				printf("pre!!!\n");
+				break;
+	}
+	//aplay_cmd(music_info, apcmd);
+	//if(NULL == apcmd)
+		//printf("apcmd cmd fail\n");
+}
 
 
+static void* AutoProcess(void *param)
+{
 	while(!auto_mode)
 	{
 		printf("auto mode is opening\n");
-		usleep(1000);
+		Sleep(1000);
 	}
 }
 //多媒体初始化
-int auto_init()
+AUTO_API int auto_init(void)
 {
 	MusicInit(&music_info_list);
 	return pthread_create(&auto_thread,NULL,AutoProcess,NULL);
 
 }
 //退出多媒体释放内存
-void auto_fini()
+AUTO_API void auto_fini(void)
 {
 	auto_mode = 1;
 	MusicDel(&music_info_list);
