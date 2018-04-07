@@ -13,16 +13,18 @@ ClientSocket.connect((host, port))
 
 Apiresult = '播放'
 
-if Apiresult.find('播放')>= 0: 
-	msg = '1'
-elif Apiresult.find('暂停')>= 0:
-	msg = '0'
+if Apiresult.find('暂停')>= 0: 
+    msg = '0'
+elif Apiresult.find('播放')>= 0:
+    msg = '1'
 elif Apiresult.find('下一首')>= 0:
-	msg = '2'
+    msg = '2'
 elif Apiresult.find('上一首')>= 0:
-	msg = '3'
+    msg = '3'
+elif Apiresult.find('停止')>= 0:
+    msg = '4'
 else:
-	msg = 'nothing'
+    msg = 'nothing'
 	
 ClientSocket.send(msg.encode('utf-8'))
 ClientSocket.close()	

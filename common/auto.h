@@ -5,14 +5,19 @@
 
 #define AUTO_API
 
+#define AUTO_FAIL      (-1)
+#define AUTO_SUCCESS   ( 0)
+
 #define MUSIC_DIR "../music"
 
 enum MUSIC_CRO{
 	MUSIC_PAUSE = 0,
  	MUSIC_PLAY, 
     MUSIC_NEXT,
-    MUSIC_PRE
+    MUSIC_PREV,
+    MUSIC_STOP
 };
+
 
 typedef signed char             AUT_S8;
 typedef signed short            AUT_S16;

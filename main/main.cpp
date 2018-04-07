@@ -41,7 +41,7 @@ int atoi(char *p)
 
 int main(int argc, char* argv[])
 {
-#if 0
+
 	if(0 != auto_init())
 		auto_fini();
 	
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 		msr_fini();
 	
 	printf("%s %d\n",__FUNCTION__,__LINE__);
-#endif
+
 	char recvbuf[100];
 	int recvbuf_len = sizeof(recvbuf);
 
