@@ -108,7 +108,7 @@ static int snd_read_wav(char *wav_path, double wav_flag)
 	else
 		ret = WAV_FAIL;
 	free(wavbuf);
-	
+
 	return ret;
 }
 
@@ -154,12 +154,12 @@ static void *request_process(void *arg)
 	{
 		system(recmd);
 		int ret = snd_read_wav(WAV_PATH, wav_flag);
-		if(ret == WAV_FAIL || 
-		   ret == WAV_CONTINUE){
+		if(ret == WAV_FAIL || ret == WAV_CONTINUE){
 		  	Sleep(5);
 			continue;
 		}
-		
+
+
 	}
 }
 

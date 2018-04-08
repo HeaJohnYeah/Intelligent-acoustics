@@ -10,13 +10,6 @@
 
 #define MUSIC_DIR "../music"
 
-enum MUSIC_CRO{
-	MUSIC_PAUSE = 0,
- 	MUSIC_PLAY, 
-    MUSIC_NEXT,
-    MUSIC_PREV,
-    MUSIC_STOP
-};
 
 
 typedef signed char             AUT_S8;
@@ -29,13 +22,34 @@ typedef unsigned short          AUT_U16;
 typedef unsigned int            AUT_U32;
 typedef unsigned long long      AUT_U64;
 
+enum MUSIC_CRO{
+	MUSIC_PAUSE = 0,
+ 	MUSIC_PLAY,
+    MUSIC_NEXT,
+    MUSIC_PREV,
+    MUSIC_STOP
+};
+
+enum PLAY_MODE{
+	SINGLE_PLAY = 0,
+ 	SINGLE_CIRCULATION,
+    LOOP_PLAY,
+    RANDOM_PLAY
+};
+
+typedef struct {
+	int  MusicCro;
+	int  PlayMode;
+}ModeSelect;
+
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 //函数添加
-AUTO_API void MusicControl(int apcmd);
+AUTO_API void MusicControl(ModeSelect apcmd);
 
 
 AUTO_API int  auto_init(void);

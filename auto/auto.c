@@ -1,4 +1,4 @@
-#ifdef __cplusplus
+﻿#ifdef __cplusplus
 #if __cplusplus
 extern "C"{
 #endif
@@ -19,7 +19,7 @@ extern "C"{
 #include <netinet/in.h>
 #include <net/if.h>
 #include <sys/syscall.h>
-#include <pthread.h>  
+#include <pthread.h>
 
 #include "../common/common.h"
 #include "../common/auto.h"
@@ -28,11 +28,10 @@ extern "C"{
 
 
 typedef struct MusicINF{
+	AUT_U8 music_id[50];//音乐名字
+	AUT_U8 music_path[100];//音乐地址
 	struct MusicINF  *next;
 	struct MusicINF  *prev;
-	AUT_U8 *music_path;//音乐地址
-	AUT_U8 *music_id;//音乐名字
-	AUT_U8  Reserved[10];//预留参数
 }MusicInfo;
 
 
@@ -47,12 +46,13 @@ static int music_pause_flag = 0;
 
 
 
-static void music_list_add(MusicInfo *music_node, AUT_U8 *id, AUT_U8 *path)
+void music_list_add(MusicInfo *music_node, AUT_U8 *id, AUT_U8 *path)
 {
-	MusicInfo *new=malloc(sizeof(MusicInfo));
-	MusicInfo *p= music_node->prev;
-	new->music_id = id;
-	new->music_path = path;
+	MusicInfo *p;
+	MusicInfo *new = (MusicInfo *)malloc(sizeof(MusicInfo));
+	p = music_node->prev;
+	memcpy(new->music_id,id, sizeof(new->music_id));
+	memcpy(new->music_path, path, sizeof(new->music_path));
 	music_node->prev = new;
 	new->next = music_node;
 	p->next = new;
@@ -60,16 +60,15 @@ static void music_list_add(MusicInfo *music_node, AUT_U8 *id, AUT_U8 *path)
 }
 
 
-static void music_list_init(MusicInfo *music_node, AUT_U8 *id, AUT_U8 *path)
+void music_head_init(MusicInfo *music_node, AUT_U8 *id, AUT_U8 *path)
 {
-	music_node = malloc(sizeof(MusicInfo));
-	music_node->music_id = id;
-	music_node->music_path = path;
+	memcpy(music_node->music_id,id, sizeof(music_node->music_id));
+	memcpy(music_node->music_path, path, sizeof(music_node->music_path));
 	music_node->next = music_node;
 	music_node->prev = music_node;
 }
 
-static void music_list_del(MusicInfo *music_node)
+void music_list_del(MusicInfo *music_node)
 {
 	MusicInfo *p;
 	for(p = music_node->next; p != music_node; p = p->next){
@@ -77,99 +76,121 @@ static void music_list_del(MusicInfo *music_node)
 		p->next->prev = p->prev;
 		p->next = p;
 		p->prev = p;
+		free(p);
 	}
 }
 
-static int  aplay_cmd(MusicInfo *music_info, int apcmd)//播放命令
+int  aplay_cmd(int apcmd)//播放命令
 {
 	AUT_U8 cmd[100];
 	switch(apcmd)
 	{
 		case MUSIC_PAUSE://暂停
-			sprintf(cmd," killall -STOP aplay"); 
+			sprintf(cmd," killall -STOP aplay");
 			music_pause_flag = 1;
 			break;
-			
+
 		case MUSIC_PLAY ://播放
 			if(music_pause_flag){
-				sprintf(cmd," killall -CONT aplay"); 
+				sprintf(cmd," killall -CONT aplay");
 				music_pause_flag = 0;
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_info->music_path);
+				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
 			}
 			else{
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_info->music_path);
+				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
 			}
 			break;
-			
+
 		case MUSIC_NEXT ://下一首
 				system("killall -9 aplay");
-				music_info = music_info->next;
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_info->music_path);
+				music_flag = music_flag->next;
+				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
 			break;
-			
+
 		case MUSIC_PREV  ://上一首
 				system("killall -9 aplay");
-				music_info = music_info->prev;
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_info->music_path);
+				music_flag = music_flag->prev;
+				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
 			break;
-			
+
 		case MUSIC_STOP ://停止
 				system("killall -9 aplay");
 				return AUTO_SUCCESS;
-		
+
 		default :
 			return AUTO_FAIL;
-	}	
+	}
 	Sleep(5);
-	printf("%s\n",cmd);
 	system(cmd);
+	printf("\n playing \n");
 	return AUTO_SUCCESS;
 }
 
+int mode_cmd(int apcmd)//播放命令
+{
+	switch(apcmd)
+	{
+		case SINGLE_PLAY://单曲播放
 
-static void MusicInit(MusicInfo *music_node)//音乐初始化
+			break;
+
+		case SINGLE_CIRCULATION ://单曲循环播放
+
+			break;
+
+		case LOOP_PLAY ://循环播放
+			break;
+
+		case RANDOM_PLAY  ://随机播放
+			break;
+
+		default :
+			return AUTO_FAIL;
+	}
+}
+
+void MusicInit(void)//音乐初始化
 {
 	int first_init = 1;
-	AUT_U8 MusicID_buf[100];
+	int size;
+	char MusicID_buf[100];
 	struct dirent *music_dirent;
 	DIR *music_dir = opendir(MUSIC_DIR);
 	while(NULL != (music_dirent = readdir(music_dir))){//读取文件并去除"."和".."
-		if(strcmp(music_dirent->d_name,".")
-		&& strcmp(music_dirent->d_name,".."))
-		{
-			sprintf(MusicID_buf, "%s/%s", MUSIC_DIR, music_dirent->d_name);
-			if(music_dirent->d_type==8)
-			{
-				if(first_init){
-					music_list_init(music_node,music_dirent->d_name,MusicID_buf);
-					first_init = 0;
-				}
-				/*增加到音乐链表*/
-				music_list_add(music_node,music_dirent->d_name,MusicID_buf);
-			}
+		if(0 == strcmp(music_dirent->d_name,".") ||
+		   0 == strcmp(music_dirent->d_name,".."))
+			continue;
+
+		sprintf(MusicID_buf, "%s/%s", MUSIC_DIR, music_dirent->d_name);
+		if(first_init){
+			music_head = (MusicInfo *)malloc(sizeof(MusicInfo));
+			music_head_init(music_head, music_dirent->d_name, MusicID_buf);
+			first_init = 0;
+		}
+		else{/*增加到音乐链表*/
+			music_list_add(music_head, music_dirent->d_name, MusicID_buf);
 		}
 	}
+	music_flag = music_head;
 	close_dir(music_dir);
 }
 
 
-static void MusicDel(MusicInfo *music_node)
+void MusicDel(MusicInfo *music_node)
 {
 	MusicInfo *qd;
 	music_list_del(music_node);
 
 }
 
-AUTO_API void MusicControl(int apcmd)
+AUTO_API void MusicControl(ModeSelect apcmd)
 {
-	int ret = aplay_cmd(music_flag,apcmd);
-	if(ret == AUTO_FAIL){
-		printf("error cmd!!!\n");
-	}
+	aplay_cmd(apcmd.MusicCro);
+	mode_cmd(apcmd.PlayMode);
 }
 
 
-static void* AutoProcess(void *param)
+void* AutoProcess(void *param)
 {
 	while(!auto_mode)
 	{
@@ -179,8 +200,9 @@ static void* AutoProcess(void *param)
 //多媒体初始化
 AUTO_API int auto_init(void)
 {
-	MusicInit(music_head);
-	return pthread_create(&auto_thread,NULL,AutoProcess,NULL);
+	MusicInit();
+	return 0;
+	//return pthread_create(&auto_thread,NULL,AutoProcess,NULL);
 
 }
 //退出多媒体释放内存
