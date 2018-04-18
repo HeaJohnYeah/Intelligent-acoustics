@@ -101,13 +101,13 @@ static int python_cmd(void)
     else if(pid == 0)
     {
 		int ret = BaiduRequest(AI_SOUND_MOD, SOUND_FUN, NULL);
-		printf("msr ret is %d\n",ret);
+		if(ret == 0)
+			printf("python ai success\n");
 		return 0;
     }
     else if(pid > 0)
     {
         waitpid(pid, &status, 0);
-        printf("this is parent process\n");
 		return 0;
     }
     return 0;

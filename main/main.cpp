@@ -64,9 +64,9 @@ int main(int argc, char* argv[])
 			reclen = strlen(recvbuf);
 			printf("%s\n",recvbuf);
 			/*音乐播放控制*/
-			if(2 == reclen){
+			if(1 == reclen){
 				apcmd.MusicCro = Atoi(&recvbuf[0]);
-				apcmd.PlayMode = Atoi(&recvbuf[1]);
+				//apcmd.PlayMode = Atoi(&recvbuf[1]);
 				MusicControl(apcmd);
 			}
 			else

@@ -2,13 +2,6 @@
 #include <Python.h>
 #include "../common/AIpython.h"
 
-void Python_init(void)
-{
-	Py_Initialize();//主要是初始化python解释器。
-    PyRun_SimpleString("import sys");//相当于在python中的import sys语句。
-    PyRun_SimpleString("sys.path.append('../python')");//是将搜索路径设置为当前目录。
-}
-
 int BaiduRequest(char *module, char *func, char *arg)
 {
 	Py_Initialize();//主要是初始化python解释器。

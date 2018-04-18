@@ -13,7 +13,6 @@
 extern "C" {
 #endif
 
-AIPYTHON_API void Python_init(void);
 
 AIPYTHON_API int BaiduRequest(char *module, char *func, char *arg);
 
