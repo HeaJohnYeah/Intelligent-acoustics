@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" src="js/music.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<title>音乐播放</title>
+	</head>
+
+	<body>
+		<div class="all">
+			<div class="content">
+				<div class="item">
+					<img onclick="prev_check()" src="images/prev.png" />
+				</div>
+				<div class="item">
+					<img onclick="play_check()" id="play-pause" src="images/play.png" />
+				</div>
+				<div class="item">
+					<img onclick="next_check()" src="images/next.png" />
+				</div>
+				<div class="item">
+					<img onclick="sound_check()" id="sound-quite" src="images/sound.png" />
+				</div>
+			</div>
+			<div class="back">
+				<img onclick="music_black()" src="images/black.png" />
+			</div>
+		</div>
+		
+		<script src="js/music.js"></script>
+		
+	</body>
+
+</html>

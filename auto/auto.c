@@ -1,4 +1,4 @@
-﻿#ifdef __cplusplus
+#ifdef __cplusplus
 #if __cplusplus
 extern "C"{
 #endif
@@ -24,7 +24,7 @@ extern "C"{
 #include "../common/common.h"
 #include "../common/auto.h"
 #include "../common/list.h"
-
+#include "../common/socket.h"
 
 
 typedef struct MusicINF{
@@ -44,6 +44,14 @@ static int music_pause_flag = 0;
 
 //./madplay -o wav:- ../1.mp3 | aplay
 
+int Atoi(char *p)
+{
+    int temp = 0;
+    if('0' <= *p && *p <= '9'){
+     	 temp = temp + (*p - '0');
+    }
+    return temp;
+}
 
 
 void music_list_add(MusicInfo *music_node, AUT_U8 *id, AUT_U8 *path)
@@ -80,49 +88,57 @@ void music_list_del(MusicInfo *music_node)
 	}
 }
 
+
+int play(AUT_U8 *path)
+{
+	AUT_U8 cmd[100];
+	sprintf(cmd, "madplay -q  %s < /dev/null &",path);
+	system(cmd);
+}
+
+
 int  aplay_cmd(int apcmd)//播放命令
 {
 	AUT_U8 cmd[100];
+	int ret;
 	switch(apcmd)
 	{
 		case MUSIC_PAUSE://暂停
-			sprintf(cmd," killall -STOP aplay");
+			system("killall -STOP madplay");
 			music_pause_flag = 1;
 			break;
 
 		case MUSIC_PLAY ://播放
 			if(music_pause_flag){
-				sprintf(cmd," killall -CONT aplay");
+				system(" killall -CONT madplay ");
 				music_pause_flag = 0;
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
+				play(music_flag->music_path);
 			}
 			else{
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
+				ret = play(music_flag->music_path);
 			}
 			break;
 
 		case MUSIC_NEXT ://下一首
-				system("killall -9 aplay");
+				system("killall -9 madplay ");
 				music_flag = music_flag->next;
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
+				play(music_flag->music_path);
 			break;
 
 		case MUSIC_PREV  ://上一首
-				system("killall -9 aplay");
+				system("killall -9 madplay ");
 				music_flag = music_flag->prev;
-				sprintf(cmd, "madplay -o wav:- %s | aplay &", music_flag->music_path);
+				play(music_flag->music_path);
 			break;
 
 		case MUSIC_STOP ://停止
-				system("killall -9 aplay");
-				return AUTO_SUCCESS;
+				system("killall -9 madplay ");
+			break;
 
 		default :
 			return AUTO_FAIL;
 	}
 	Sleep(5);
-	system(cmd);
-	printf("\n playing \n");
 	return AUTO_SUCCESS;
 }
 
@@ -192,17 +208,37 @@ AUTO_API void MusicControl(ModeSelect apcmd)
 
 void* AutoProcess(void *param)
 {
+	ModeSelect apcmd;
+	int client , reclen;
+	char recvbuf[100];
+	int recvbuf_len = sizeof(recvbuf);
+
+	int serverSocket = TcpServerCreate(CGI_SERVER_PORT, HOST);//服务器socket初始化
+	if(serverSocket < 0)
+		return NULL;
+
 	while(!auto_mode)
 	{
-		Sleep(1000);
+		client = SocketAccept(serverSocket, 3000);//接收客户
+		if(client < 0)
+			continue;
+		memset(recvbuf, 0, recvbuf_len);
+		if(SocketRecv(client, recvbuf, recvbuf_len, 1000)){
+			reclen = strlen(recvbuf);
+			if(1 == reclen){
+				apcmd.MusicCro = Atoi(&recvbuf[0]);
+				printf("cmd : %d\n",apcmd.MusicCro);
+				MusicControl(apcmd);
+			}
+			/*WEB音乐播放控制*/
+		}
 	}
 }
 //多媒体初始化
 AUTO_API int auto_init(void)
 {
 	MusicInit();
-	return 0;
-	//return pthread_create(&auto_thread,NULL,AutoProcess,NULL);
+	return pthread_create(&auto_thread,NULL,AutoProcess,NULL);
 
 }
 //退出多媒体释放内存

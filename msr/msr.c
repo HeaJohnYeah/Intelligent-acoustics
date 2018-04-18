@@ -18,16 +18,23 @@ extern "C" {
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include<sys/wait.h>
+
 #include <errno.h>
 #include <netdb.h>
 
-#include "sndfile.h"
+//#include "sndfile.h"
 
 #include "../common/msr.h"
 #include "../common/auto.h"
 #include "../common/socket.h"
 #include "../common/common.h"
 #include "../common/pthreadpool.h"
+#include "../common/AIpython.h"
+
+int req_mode = 0;
+static pthread_t msr_thread = 0;
+RecordInfo rest_info;//录音参数
 
 
 PoolCreate api_request;//线程池
@@ -54,71 +61,20 @@ const MSR_U8 *FILE_TYPE[4]={
 		"voc","wav","raw","au"
 };
 
-/*---------------SND  WAV  FILE------------------*/
 
-static double waves_max(double *buf)//计算最大振幅
+int Matoi(char *p)
 {
-	double max;
-	int arraylenth =sizeof(buf);
-	int i;
-	for(i = 0; i < arraylenth; i++)
-		if(fabs(buf[i] - max) >= ESP)
-				max = buf[i];
-	return max;
+    int temp = 0;
+    if('0' <= *p && *p <= '9'){
+     	 temp = temp + (*p - '0');
+    }
+    return temp;
 }
 
-//读取wav文件信息,设置wav振幅判断
-static int snd_read_wav(char *wav_path, double wav_flag)
-{
-	SNDFILE *sf;
-	SF_INFO info;
-	int num_channels;
-	int num_items;
-	int num_wav;
-	int ret;
-	double *wavbuf;
-
-	info.format = 0;
-
-	sf = sf_open(wav_path,SFM_READ,&info);//获取wav信息
-	if(NULL == sf){
-		printf("Failed to open the file.\n");
-		sf_close(sf);
-		return WAV_FAIL;
-	}
-
-	printf("frames=%d\n samplerate=%d\n channels=%d\n", (int)info.frames, (int)info.samplerate, (int)info.channels);
-
-	num_items = info.frames * info.channels;
-	printf("num_items=%d\n",num_items);
-
-	wavbuf = (double *)malloc(num_items*sizeof(double));
-	if(NULL == wavbuf){
-		printf("Create wav buf failed.\n");
-		sf_close(sf);
-		return WAV_FAIL;
-	}
-
-    num_wav = sf_read_double(sf,wavbuf,num_items);//读取个点数据
-    sf_close(sf);
-
-	double Mwav = waves_max(wavbuf);//计算出最大振幅
-	if(fabs(Mwav) - wav_flag)
-		ret = WAV_SUCCESS;
-	else
-		ret = WAV_FAIL;
-	free(wavbuf);
-
-	return ret;
-}
-
-
-/*------------------------------------------------------*/
 
 //录音命令参数初始化
-static int res_info_init(RecordInfo *rest,	MSR_U8 *rate, MSR_U8 *duration, MSR_U8 *channels, MSR_U8 *format, MSR_U8 *type)
+static int res_info_init(RecordInfo *rest,	MSR_U32 rate, MSR_U8 duration, MSR_U8 channels,const MSR_U8 *format, const MSR_U8 *type)
 {
-	rest = (RecordInfo *)malloc(sizeof(RecordInfo));
 	if(NULL == rest){
 		printf("request malloc fail\n");
 		return -1;
@@ -126,15 +82,41 @@ static int res_info_init(RecordInfo *rest,	MSR_U8 *rate, MSR_U8 *duration, MSR_U
 	rest->rate = rate;
 	rest->duration = duration;
 	rest->channels = channels;
-	rest->format = format;
-	rest->type = type;
+	memcpy(rest->format, format, sizeof(rest->format));
+	memcpy(rest->type, type, sizeof(rest->type));
+	rest->record_param = RECORD_FINISH ;
 	return 0;
+}
+
+static int python_cmd(void)
+{
+	pid_t pid;
+	int status;
+	pid = fork();
+	if(pid == -1)
+    {
+        perror("fork error");
+        exit(EXIT_FAILURE);
+    }
+    else if(pid == 0)
+    {
+		int ret = BaiduRequest(AI_SOUND_MOD, SOUND_FUN, NULL);
+		printf("msr ret is %d\n",ret);
+		return 0;
+    }
+    else if(pid > 0)
+    {
+        waitpid(pid, &status, 0);
+        printf("this is parent process\n");
+		return 0;
+    }
+    return 0;
 }
 
 //录音命令设置
 static void record_cmd(RecordInfo *rest_info, MSR_U8 *cmd)
 {
-	sprintf(cmd, "arecord -c %s -d %s -f %s -r %s -t %s record.%s",
+	sprintf(cmd, " arecord -c %d -d %d -f %s -r %d -t %s ../wav/record.%s  &",
 				rest_info->channels, rest_info->duration,
 				rest_info->format,rest_info->rate,
 				rest_info->type,rest_info->type);
@@ -143,57 +125,80 @@ static void record_cmd(RecordInfo *rest_info, MSR_U8 *cmd)
 //录音命令线程
 static void *request_process(void *arg)
 {
-	RecordInfo *rest_info = (RecordInfo *)arg;
-	MSR_U8 *recmd = malloc(CMD_SIZE);
-	double wav_flag = 0;
-	record_cmd(rest_info, recmd);
+
+	int client , reclen;
+	char recvbuf[100];
+	int recvbuf_len = sizeof(recvbuf);
+	int ret;
+
+	int serverSocket = TcpServerCreate(REC_SERVER_PORT, HOST);//服务器socket初始化
+	if(serverSocket < 0)
+		return NULL;
+
+	MSR_U8 recmd[CMD_SIZE] = {0};
+	record_cmd(&rest_info, recmd);
 	if(NULL == recmd)
 		printf("record cmd fail\n");
 
-	while(1)
+	while(!req_mode)
 	{
-		system(recmd);
-		int ret = snd_read_wav(WAV_PATH, wav_flag);
-		if(ret == WAV_FAIL || ret == WAV_CONTINUE){
-		  	Sleep(5);
+		client = SocketAccept(serverSocket, 3000);//接收客户
+		if(client < 0)
 			continue;
+		memset(recvbuf, 0, recvbuf_len);
+		if(SocketRecv(client, recvbuf, recvbuf_len, 1000)){
+			reclen = strlen(recvbuf);
+			if(1 == reclen){
+				rest_info.record_param = Matoi(&recvbuf[0]);
+				printf("cmd : %s\n",recmd);
+			}
+			if(rest_info.record_param == RECORD_START){
+				system(recmd);
+				sleep(3);
+				rest_info.record_param = RECORD_FINISH;
+		 	 }
 		}
-
-
+		python_cmd();
 	}
 }
 
 MSR_API int msr_init(int task_num)
 {
 	Ai_Requset_pool_init(&api_request,task_num);	//创建线程来录音
+	//Python_init(); //创建python环境
 
-	RecordInfo *rest_info[task_num];//录音参数
 
-	MSR_U8 *rate 	 = "16000";//频率
-	MSR_U8 *duration = "4";//持续时间，秒为单位
-	MSR_U8 *channels = "2";//通道号
-	MSR_U8 *format 	 = (MSR_U8 *)FORMAT[4];
-	MSR_U8 *type 	 = (MSR_U8 *)FILE_TYPE[1];
+	MSR_U32 rate 	 = 16000;//频率
+	MSR_U8 duration = 2;//持续时间，秒为单位
+	MSR_U8 channels = 1;//通道号
 
 	int i,ret;
+	if(0 != ret){
+		printf("request info init fail task number is %d\n",i);
+		msr_fini();
+		//free(rest_info);
+		return MSR_FAIL;
+	}
+
     for (i = 0; i < task_num; i++) {
-       	ret = res_info_init(rest_info[i], rate, duration, channels, format, type);
+       	ret = res_info_init(&rest_info, rate, duration, channels, FORMAT[2], FILE_TYPE[1]);
 		if(0 != ret){
 			printf("request info init fail task number is %d\n",i);
-			goto msr_destroy;
+			goto MSR_DISTORY;
 		}
-        ret = Ai_Requset_pool_add(&api_request, request_process, rest_info[i]);
+
+        ret = Ai_Requset_pool_add(&api_request, request_process, NULL);
 		if(0 != ret){
 			printf("create request fail task number is %d\n",i);
-			goto msr_destroy;
+			goto MSR_DISTORY;
 		}
     }
 
-	return 0;
+	return pthread_create(&msr_thread,NULL,request_process,NULL);
 
-msr_destroy :
-	msr_fini();
-	free(rest_info);
+MSR_DISTORY:
+	return MSR_FAIL;
+
 }
 
 MSR_API void msr_fini()

@@ -1,0 +1,53 @@
+/*通用 */   
+	.content{
+				width:100%;
+				height: 300px;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+    	    }
+			
+    .item{
+			margin:15px;
+    		width: 40px;
+    		height: 40px;
+    	 }
+		
+    .item img{
+				width: 100%;
+				height: 100%;
+    	     }
+
+	.all{
+			position: relative;
+		}
+/*回退*/  	
+	.back{
+			position: absolute;
+			top: 30px;
+			right: 30px;
+			width: 40px;
+			height: 40px;
+		 }
+		 
+	.back img {
+				width: 100%;
+				height: 100%;
+			  }
+
+/*音乐*/			  
+	.sound {
+				width: 100%;
+				height: 100px;
+				text-align: center;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+			
+
+			
+
+			  
+			  

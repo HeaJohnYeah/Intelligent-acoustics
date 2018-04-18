@@ -4,17 +4,16 @@
 #include <stdint.h>
 /*  msr process */
 #define MSR_API
-#define CMD_SIZE        (60)
+#define CMD_SIZE        (100)
 
-/*snd file*/
-#define SNDFILE SNDFILE
-#define SF_INFO SF_INFO
 
 #define ESP 			(1e-6)
 #define WAV_PATH   "record.wav"
 #define WAV_FAIL        (-1)
 #define WAV_CONTINUE    ( 1)
 #define WAV_SUCCESS     ( 0)
+
+#define MSR_FAIL        (-1)
 
 typedef signed char             MSR_S8;
 typedef signed short            MSR_S16;
@@ -45,12 +44,19 @@ typedef unsigned long long      MSR_U64;
 *********************************/
 
 typedef struct{
-	MSR_U8 *rate;
-	MSR_U8 *duration;
-	MSR_U8 *channels;
-	MSR_U8 *format;
-	MSR_U8 *type;
+	MSR_U32 rate;
+	MSR_U8 duration;
+	MSR_U8 channels;
+	MSR_U8 format[8];
+	MSR_U8 type[4];
+	MSR_S32 record_param;
 } RecordInfo;
+
+
+enum RECORD_MODE{
+	RECORD_START,
+	RECORD_FINISH
+};
 
 
 #ifdef __cplusplus

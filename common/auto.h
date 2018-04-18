@@ -10,7 +10,9 @@
 
 #define MUSIC_DIR "../music"
 
-
+#define PAUSE(id)  kill(id, SIGSTOP)
+#define REPLAY(id)   kill(id, SIGCONT)
+#define STOP(id)  kill(id, SIGINT)
 
 typedef signed char             AUT_S8;
 typedef signed short            AUT_S16;

@@ -1,4 +1,6 @@
-# Intelligent-acoustics msr Makefile 
+# Intelligent-acoustics msr Makefile
+
+CROSS_PREFIX := arm-cortexa9-linux-gnueabihf-
 
 CC=$(CROSS_PREFIX)gcc
 AR=$(CROSS_PREFIX)ar
@@ -7,10 +9,13 @@ MSR := $(wildcard *.c)
 OBJ = $(MSR:%.c=%.o)
 
 
-INC := -I../common/
-INC += -I/usr/local/snd/include 
+CC_FLAG += -lpthread
 
-LIB := -L/usr/local/snd/lib -lsndfile
+INC := -I../common/
+INC := -I/usr/local/arm/python3.5/include/python3.5m
+
+
+LIB := -L/usr/local/arm/python3.5/lib -lpython3.5m
 
 
 MSR_TARGET := libmsr.a
@@ -23,8 +28,8 @@ $(MSR_TARGET):$(OBJ)
 
 .SUFFIXES: .o .c
 .c.o:
-	$(CC)  $(INC)  $(LIB) -c $*.c -o $*.o
-	
+	$(CC)  $(INC)  $(CC_FLAG) $(LIB) -c $*.c -o $*.o
+
 clean:
 	@rm -f $(MSR_TARGET)
 	@rm -f $(OBJ)

@@ -1,7 +1,7 @@
 import socket
 import string
 import sys
-#from aip import AipSpeech
+from aip import AipSpeech
 
 APP_ID = '10920915'
 API_KEY = 'xG7KMCpv0x9stVVbk1EdWSSb'
@@ -9,7 +9,7 @@ SECRET_KEY = '4dbface55ed062109b3727a97fba24e0'
 
 
 # 初始化AipSpeech对象
-#aipSpeech = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
+aipSpeech = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
 
 # 读取文件
 def get_file_content(filePath):
@@ -55,22 +55,20 @@ def socket_creat(Apiresult):
     #播放控制
     msg = music_control(Apiresult)
     #播放模式
-    mod = play_mode(Apiresult)
-    msg = msg + mod
+   # mod = play_mode(Apiresult)
+   # msg = msg + mod
     ClientSocket.send(msg.encode('utf-8'))
     ClientSocket.close()
 
 # 识别本地文件
 #目前支持的格式较少，原始 PCM 的录音参数必须符合 8k/16k 采样率、16bit 位深、单声道，支持的格式有：pcm（不压缩）、wav（不压缩，pcm编码）、amr（压缩格式）。
-#def bai_request():
-	#result = aipSpeech.asr(get_file_content('./record.wav'), 'wav', 16000, {
-    #		'lan': 'zh',
-	#})
-	#Apiresult = result['result'][0]
-	#socket_creat(Apiresult)
+def bai_request():
+	result = aipSpeech.asr(get_file_content('../wav/record.wav'), 'wav', 16000, {
+    		'lan': 'zh',
+	})
+	Apiresult = result['result'][0]
+	socket_creat(Apiresult)
 
-Apiresult = '循环播放'
-socket_creat(Apiresult)
 
 
 

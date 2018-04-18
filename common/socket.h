@@ -1,15 +1,15 @@
 #ifndef _SOCKET__H_
 #define _SOCKET__H_
 
-#include <stdio.h>  
-#include <unistd.h>  
-#include <string.h>  
-#include <stdlib.h>  
-#include <arpa/inet.h>  
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/types.h>  
-#include <netinet/in.h> 
-#include <sys/un.h> 
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/un.h>
 #include <stdint.h>
 
 
@@ -17,7 +17,9 @@
 #define socklen_t int
 
 #define HOST "127.0.0.1"
-#define SERVER_PORT 6666
+#define PYTHON_SERVER_PORT 6666
+#define CGI_SERVER_PORT 8117
+#define REC_SERVER_PORT 8000
 
 #define SOCKET_API
 #define SOCKET_FAIL   (-1)

@@ -1,8 +1,3 @@
-#ifndef _WIN32
-#include <signal.h>
-#include <unistd.h>
-#include <semaphore.h>
-#endif
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <string.h>
@@ -30,7 +25,7 @@
 
 int g_run = 1;
 
-int atoi(char *p)
+int Atoi(char *p)
 {
     int temp = 0;
     if('0' <= *p && *p <= '9'){
@@ -42,35 +37,36 @@ int atoi(char *p)
 int main(int argc, char* argv[])
 {
 
-	if(0 != auto_init())
+	int client , reclen;
+	ModeSelect apcmd;
+
+	if(0 != auto_init()){
 		auto_fini();
-
-	if(0 != msr_init(1))
+	}
+	if(0 != msr_init(2)){
 		msr_fini();
-
-	printf("%s %d\n",__FUNCTION__,__LINE__);
+	}
 
 	char recvbuf[100];
 	int recvbuf_len = sizeof(recvbuf);
 
-	int serverSocket = TcpServerCreate(SERVER_PORT, HOST);//服务器socket初始化
+	int serverSocket = TcpServerCreate(PYTHON_SERVER_PORT, HOST);//服务器socket初始化
 	if(serverSocket < 0)
 		return SOCKET_FAIL;
 
 	while(g_run)
 	{
-		int client , reclen;
-		ModeSelect apcmd;
-		client = SocketAccept(serverSocket, 3000);//接收客户端
+		client = SocketAccept(serverSocket, 3000);//接收客户
 		if(client < 0)
 			continue;
 		memset(recvbuf, 0, recvbuf_len);
 		if(SocketRecv(client, recvbuf, recvbuf_len, 1000)){
 			reclen = strlen(recvbuf);
 			printf("%s\n",recvbuf);
+			/*音乐播放控制*/
 			if(2 == reclen){
-				apcmd.MusicCro = atoi(&recvbuf[0]);
-				apcmd.PlayMode = atoi(&recvbuf[1]);
+				apcmd.MusicCro = Atoi(&recvbuf[0]);
+				apcmd.PlayMode = Atoi(&recvbuf[1]);
 				MusicControl(apcmd);
 			}
 			else
